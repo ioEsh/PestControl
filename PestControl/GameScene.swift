@@ -33,6 +33,7 @@ import SpriteKit
 class GameScene: SKScene {
   
   var player = Player()
+  var bug = Bug()
   var background: SKTileMapNode!
   
   required init?(coder aDecoder: NSCoder) {
@@ -44,8 +45,8 @@ class GameScene: SKScene {
   
   override func didMove(to view: SKView) {
     addChild(player)
-    
-    
+    addChild(bug)
+    bug.position = CGPoint(x: 60, y: 0 )
     setupCamera()
     setupWorldPhysics()
   }
