@@ -79,7 +79,7 @@ extension GameScene
     let zeroDistance = SKRange(constantValue: 0)
     let playerConstraint = SKConstraint.distance(zeroDistance, to: player)
     
-    //a
+    //a -- determines the smallest distance from each edge that can be viewed without seeing gray out side boundaries , yet when the view is larger u ake the minimum and half the frame so to stay centeredd 
     let xInset = min(view.bounds.width/2 * camera.xScale, background.frame.width/2)
     let yInset = min(view.bounds.height/2 * camera.yScale, background.frame.height/2)
     
