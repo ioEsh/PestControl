@@ -73,7 +73,10 @@ class GameScene: SKScene {
     if !player.hasBugspray {
       updateBugspray()
     }
+    advanceBreakableTile(locatedAt: player.position)
   }
+  
+  
 }
 // boundaries of game
 extension GameScene
@@ -182,6 +185,11 @@ extension GameScene: SKPhysicsContactDelegate {
           player.hasBugspray = false 
         }
       }
+    case PhysicsCategory.Breakable:
+      if let obstacleNode = other.node {
+        advanceBreakableTile(locatedAt: obstacleNode.position)
+        obstacleNode.removeFromParent()
+      }
     default:
       break 
     }
@@ -196,7 +204,21 @@ extension GameScene: SKPhysicsContactDelegate {
   }
 }
 extension GameScene {
+  func tileGroupForName(tileSet: SKTileSet, name: String) -> SKTileGroup? {
+    let tileGroup = tileSet.tileGroups.filter { $0.name == name }.first
+    return tileGroup
+  }
   
+  func advanceBreakableTile(locatedAt nodePosition: CGPoint) {
+    guard let obstaclesTileMap = obstaclesTileMap else { return }
+    //1
+    let (column, row) = tileCoordinates(in: obstaclesTileMap, at: nodePosition)
+    let obstacle = tile(in: obstaclesTileMap, at: (column, row))
+    guard let nextTileGroupName = obstacle?.userData?.object(forKey: "breakable") as? String else { return }
+    if let nextTileGroup = tileGroupForName(tileSet: obstaclesTileMap.tileSet, name: nextTileGroupName) {
+      obstaclesTileMap.setTileGroup(nextTileGroup, forColumn: column, row: row)
+    }
+  }
   
   func setupObstaclePhysics() {
     guard let obstaclesTileMap = obstaclesTileMap else { return }
