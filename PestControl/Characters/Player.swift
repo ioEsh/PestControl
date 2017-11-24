@@ -16,6 +16,12 @@ enum PlayerSettings
 
 class Player: SKSpriteNode {
   
+  
+  var hasBugspray: Bool = false {
+    didSet {
+      blink(color: .green, on: hasBugspray)
+    }
+  }
   var animations: [SKAction] = [] 
   // because we create custom initializer
   required init?(coder aDecoder: NSCoder) {
@@ -32,6 +38,9 @@ class Player: SKSpriteNode {
     
     // movement & physics
     physicsBody = SKPhysicsBody(circleOfRadius: size.width/2)
+    physicsBody?.categoryBitMask = PhysicsCategory.Player
+    physicsBody?.contactTestBitMask = PhysicsCategory.All
+    
     physicsBody?.restitution = 10
     physicsBody?.linearDamping = 0.5
     physicsBody?.friction = 0.0
@@ -79,3 +88,21 @@ class Player: SKSpriteNode {
 
 
 extension Player: Animatable { }
+extension Player {
+  func blink(color: SKColor, on: Bool) {
+    let blinkOff = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.2)
+    if on {
+      let blinkOn = SKAction.colorize(with: color, colorBlendFactor: 1.0, duration: 0.2)
+      let blink = SKAction.repeatForever(SKAction.sequence([blinkOn, blinkOff]))
+      xScale = xScale < 0 ? -1.5 : 1.5
+      yScale = 1.5
+      
+      run(blink, withKey: "blinK")
+    } else {
+      xScale = xScale < 0 ? -1.0 : 1.0
+      yScale = 1.0
+      removeAction(forKey: "blink")
+      run(blinkOff)
+    }
+  }
+}

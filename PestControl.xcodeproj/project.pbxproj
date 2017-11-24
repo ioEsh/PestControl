@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B2CE5AF1FC785B8008768ED /* Bug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2CE5AE1FC785B8008768ED /* Bug.swift */; };
+		0B2CE5B11FC7B5C7008768ED /* Firebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2CE5B01FC7B5C7008768ED /* Firebug.swift */; };
 		0B62CCB11FC59A57000DE35D /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B62CCB01FC59A57000DE35D /* Player.swift */; };
 		0BEC3FF31FC5BA3900CDA4DB /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEC3FF21FC5BA3900CDA4DB /* Types.swift */; };
 		0BEC3FF51FC5BA5E00CDA4DB /* Animatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEC3FF41FC5BA5E00CDA4DB /* Animatable.swift */; };
@@ -36,6 +37,7 @@
 
 /* Begin PBXFileReference section */
 		0B2CE5AE1FC785B8008768ED /* Bug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bug.swift; sourceTree = "<group>"; };
+		0B2CE5B01FC7B5C7008768ED /* Firebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Firebug.swift; sourceTree = "<group>"; };
 		0B62CCB01FC59A57000DE35D /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		0BEC3FF21FC5BA3900CDA4DB /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		0BEC3FF41FC5BA5E00CDA4DB /* Animatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animatable.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 				0B62CCB01FC59A57000DE35D /* Player.swift */,
 				0B2CE5AE1FC785B8008768ED /* Bug.swift */,
 				0BEC3FF21FC5BA3900CDA4DB /* Types.swift */,
+				0B2CE5B01FC7B5C7008768ED /* Firebug.swift */,
 				0BEC3FF61FC6352700CDA4DB /* Extensions.swift */,
 				0BEC3FF41FC5BA5E00CDA4DB /* Animatable.swift */,
 			);
@@ -226,6 +229,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B2CE5B11FC7B5C7008768ED /* Firebug.swift in Sources */,
 				824441791D3C5E8F005ECB76 /* GameScene.swift in Sources */,
 				82CCE3B41F0B0A39009B67F9 /* CGPoint+Extensions.swift in Sources */,
 				82CCE3BD1F0B0A39009B67F9 /* SKTTimingFunctions.swift in Sources */,
