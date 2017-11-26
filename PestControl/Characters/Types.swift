@@ -25,3 +25,6 @@ struct PhysicsCategory {
   static let Breakable: UInt32 = 0b1 << 4
 }
 
+enum GameState: Int {
+  case initial=0, start, play, win, lose, reload, pause  
+}

@@ -49,7 +49,11 @@ class Player: SKSpriteNode {
     createAnimations(character: "player")
   }
   
-  
+  override func encode(with aCoder: NSCoder) {
+    aCoder.encode(hasBugspray, forKey: "Player.hasBugspray")
+    aCoder.encode(animations, forKey: "Player.animations")
+    super.encode(with: aCoder)
+  }
   // movement &  gestures
   
   /// makes player move toward `target`

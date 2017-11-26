@@ -69,8 +69,12 @@ class Bug: SKSpriteNode {
     run(SKAction.sequence([SKAction.fadeOut(withDuration: 3), SKAction.removeFromParent()]))
   }
   
+  override func encode(with aCoder: NSCoder) {
+    aCoder.encode(animations, forKey: "Bug.animations")
+    super.encode(with: aCoder)
+  }
   
 }
-
+  
 extension Bug: Animatable {}
 

@@ -31,33 +31,54 @@
 import SpriteKit
 
 class GameScene: SKScene {
-  
-  var player = Player()
-//  var bug = Bug()
+  /* Background, Tile Maps, World */
   var background: SKTileMapNode!
-  var bugsNode = SKNode()
   var obstaclesTileMap: SKTileMapNode?
-  var firebugCount: Int = 0
   var bugsprayTileMap: SKTileMapNode?
+
+  /* Labels, Counts, Timers, Text, Attributed Texts */
+  var hud = HUD()
+  var timeLimit: Int = 50
+  var elapsedTime: Int = 0
+  var startTime: Int?
+  var firebugCount: Int = 0
+
+  /* Characters */
+  var player = Player()
+  //  var bug = Bug()
+  var bugsNode = SKNode()
+
+  /* Gameplay */
+  var currentLevel: Int = 1
+  var gameState: GameState = .initial {
+    didSet {
+      hud.updateGameState(from: oldValue, to: gameState)
+    }
+  }
   
-  
+  /* Initializers */
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
     background = childNode(withName: "background") as! SKTileMapNode
     obstaclesTileMap = childNode(withName: "obstacles") as? SKTileMapNode
-    
+    if let timeLimit = userData?.object(forKey: "timeLimit") as? Int {
+      self.timeLimit = timeLimit
+    }
+    addObservers()
   }
   
-  
+  /* ViewDidLoad */
   override func didMove(to view: SKView) {
+    gameState = .start
     addChild(player)
-//    addChild(bug)
+  //    addChild(bug)
 //    bug.position = CGPoint(x: 60, y: 0 )
     setupCamera()
     setupWorldPhysics()
     createBugs()
     setupObstaclePhysics()
-    
+    setupHUD()
+  
     if firebugCount > 0 {
       createBugspray(quantity: firebugCount + 10)
     }
@@ -66,17 +87,138 @@ class GameScene: SKScene {
   override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
     guard let touch = touches.first else { return }
     
-    player.move(target: touch.location(in: self))
+    switch gameState {
+    case .start:
+      gameState = .play
+      isPaused = false
+      startTime = nil
+      elapsedTime = 0
+    case .play:
+      player.move(target: touch.location(in: self))
+    case .win:
+      transitionToScene(level: currentLevel + 1)
+    case .lose:
+      transitionToScene(level: currentLevel)
+    case .reload:
+      if let touchedNode = atPoint(touch.location(in: self)) as? SKLabelNode {
+        if touchedNode.name == HUDMessages.yes {
+          isPaused = false
+          startTime = nil
+          gameState = .play
+        } else if touchedNode.name == HUDMessages.no {
+          transitionToScene(level: 1)
+        }
+      }
+    default:
+      break
+    }
+    
   }
 
   override func update(_ currentTime: TimeInterval) {
+    if gameState != .play {
+      isPaused = true
+      return
+    }
     if !player.hasBugspray {
       updateBugspray()
     }
     advanceBreakableTile(locatedAt: player.position)
+    updateHUD(currentTime: currentTime)
+    checkEndGame()
   }
   
   
+  func checkEndGame()
+  {
+    if bugsNode.children.count == 0 {
+      print(#function)
+      gameState = .win
+      player.physicsBody?.linearDamping = 0.8
+    } else if timeLimit - elapsedTime <= 0 {
+      print(#function)
+      print("But u lost")
+      gameState = .lose
+      
+    }
+  }
+  
+  func transitionToScene(level: Int)
+  {
+    //1 -- check that the scene for the new level exists.
+    guard let newScene = SKScene(fileNamed: "Level\(level)") as? GameScene else { fatalError("Level: \(level) not found!!")}
+    //2 -- set current level property in new cscene with a flip tarnsition
+    newScene.currentLevel = level
+    view?.presentScene(newScene, transition: SKTransition.flipVertical(withDuration: 0.7))
+  }
+  
+}
+// MARK: - Game State Notifications
+extension GameScene
+{
+  func applicationDidBecomeActive() {
+    print("****\n\nApplication: ACTIVE!\n\n")
+    if gameState == .pause {
+      gameState = .reload
+    }
+  }
+  
+  func applicationWillResignActive()
+  {
+    if gameState != .lose {
+      gameState = .pause
+    }
+    print("****\n\nApplication: WILL RESIGN ACT!\n\n")
+
+  }
+  
+  func applicationDidEnterBackground()
+  {
+    print("****\n\nApplication: BACKGROUND STATE!\n\n")
+    if gameState != .lose {
+      saveGame()
+    }
+  }
+  
+  func addObservers() {
+    let notificationCenter = NotificationCenter.default
+    notificationCenter.addObserver(forName: .UIApplicationDidBecomeActive, object: nil, queue: nil) { [weak self] _  in
+      self?.applicationDidBecomeActive()
+    }
+    
+    notificationCenter.addObserver(forName: .UIApplicationWillResignActive, object: nil, queue: nil) { [weak self] _ in
+      self?.applicationWillResignActive()
+    }
+    
+    notificationCenter.addObserver(forName: .UIApplicationDidEnterBackground, object: nil, queue: nil) { [weak self] _ in
+      self?.applicationDidEnterBackground()
+    }
+  }
+}
+// MARK: - Saving Games
+extension GameScene {
+  func saveGame() {
+    //1
+    let fileManager = FileManager.default
+    guard let directory = fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+    let saveURL = directory.appendingPathComponent("SavedGames")
+    do {
+      try fileManager.createDirectory(atPath: saveURL.path, withIntermediateDirectories: true, attributes: nil)
+    } catch let error as NSError {
+      fatalError("Failed to create directory: \(error.debugDescription)")
+    }
+    let fileURL = saveURL.appendingPathComponent("saved-game")
+    print("*Saving:\(fileURL.path)")
+    NSKeyedArchiver.archiveRootObject(self, toFile: fileURL.path)
+  }
+  override func encode(with aCoder: NSCoder) {
+    aCoder.encode(firebugCount, forKey: "Scene.firebugCount")
+    aCoder.encode(elapsedTime, forKey: "Scene.elapsedTime")
+    
+    aCoder.encode(gameState.rawValue, forKey: "Scene.gameState")
+    aCoder.encode(currentLevel, forKey: "Scene.currentLevel")
+    super.encode(with: aCoder)
+  }
 }
 // boundaries of game
 extension GameScene
@@ -89,7 +231,7 @@ extension GameScene
   }
 }
 
-// For camera settings
+// MARK: - Game Setup
 extension GameScene
 {
   func setupCamera()
@@ -118,6 +260,22 @@ extension GameScene
     //3 -- assignment of constraint to player
     camera.constraints = [playerConstraint, edgeConstraint]
     
+  }
+  func setupHUD()
+  {
+    camera?.addChild(hud)
+    hud.addTimer(time: timeLimit)
+  
+  }
+  
+  func updateHUD(currentTime: TimeInterval)
+  {
+    if let startTime =  startTime {
+      elapsedTime = Int(currentTime) - startTime
+    } else {
+      startTime = Int(currentTime) - elapsedTime
+    }
+    hud.updateTimer(time: timeLimit - elapsedTime)
   }
   
 }
@@ -160,6 +318,7 @@ extension GameScene {
   }
 
 }
+// MARK: - Game Physics
 
 extension GameScene: SKPhysicsContactDelegate {
   
